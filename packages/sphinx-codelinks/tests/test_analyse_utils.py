@@ -64,10 +64,12 @@ def test_every_comment_type_is_wired():
     discovery or as no scope at all."""
     members = set(CommentType)
     assert set(COMMENT_FILETYPE) == {member.value for member in members}
-    # YAML and JSONC bind to data structures, not scopes (find_associated_scope)
+    # YAML and JSONC bind to data structures, not scopes (find_associated_scope);
+    # Markdown markers are standalone HTML blocks that bind to nothing
     assert set(utils.SCOPE_NODE_TYPES) == members - {
         CommentType.yaml,
         CommentType.jsonc,
+        CommentType.markdown,
     }
     assert set(utils.SCOPE_CONTAINER_TYPES) <= set(utils.SCOPE_NODE_TYPES)
     for comment_type, predicates in utils.SCOPE_PREDICATES.items():
@@ -1993,3 +1995,27 @@ def test_yaml_inline_comments_comprehensive(
         assert expected_associations[i] in structure_text, (
             f"Comment {i} '{comment.text.decode('utf-8')}' -> Expected '{expected_associations[i]}' in '{structure_text}'"
         )
+
+
+@pytest.mark.parametrize(
+    ("comment_type", "code", "expected_count"),
+    [
+        # standalone block HTML comments are captured, paragraph text is not
+        (
+            CommentType.markdown,
+            b"<!-- @Md1, IMPL_MD_1, impl, [REQ_1] -->\n\nText.\n\n<!-- @Md2, IMPL_MD_2, impl, [REQ_2] -->\n",
+            2,
+        ),
+        (CommentType.markdown, b"# Heading\n\nJust a paragraph.\n", 0),
+        # Starlark is scanned with the Python grammar
+        (
+            CommentType.bazel,
+            b'# @Bzl, IMPL_BZL, impl, [REQ_BZL]\ncc_library(name = "x")\n',
+            1,
+        ),
+    ],
+)
+def test_init_tree_sitter_markdown_and_bazel(comment_type, code, expected_count):
+    parser, query = utils.init_tree_sitter(comment_type)
+    comments = utils.extract_comments(code, parser, query) or []
+    assert len(comments) == expected_count

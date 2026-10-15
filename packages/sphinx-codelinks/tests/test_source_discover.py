@@ -59,7 +59,7 @@ def test_source_directory_is_worker_local(
                 "comment_type": "java",
             },
             [
-                "Schema validation error in field 'comment_type': 'java' is not one of ['bash', 'cpp', 'cs', 'go', 'jsonc', 'python', 'rust', 'ts', 'yaml']"
+                "Schema validation error in field 'comment_type': 'java' is not one of ['bash', 'bazel', 'cpp', 'cs', 'go', 'jsonc', 'markdown', 'python', 'rust', 'ts', 'yaml']"
             ],
         ),
         (
@@ -201,6 +201,8 @@ def create_source_files(tmp_path: Path) -> Path:
         ("python", len(COMMENT_FILETYPE["python"])),
         ("ts", len(COMMENT_FILETYPE["ts"])),
         ("bash", len(COMMENT_FILETYPE["bash"])),
+        ("markdown", len(COMMENT_FILETYPE["markdown"])),
+        ("bazel", len(COMMENT_FILETYPE["bazel"])),
     ],
 )
 def test_comment_filetype(
@@ -213,6 +215,18 @@ def test_comment_filetype(
     )
     source_discover = SourceDiscover(config)
     assert len(source_discover.source_paths) == nums_files
+
+
+def test_bazel_discover_suffixless_names(tmp_path: Path) -> None:
+    """BUILD and WORKSPACE have no suffix and are matched by exact name."""
+    for name in ("BUILD", "WORKSPACE", "BUILD.bazel", "rules.bzl", "BUILDER", "x.py"):
+        (tmp_path / name).touch()
+
+    config = SourceDiscoverConfig(
+        src_dir=tmp_path, comment_type="bazel", gitignore=False
+    )
+    found = {path.name for path in SourceDiscover(config).source_paths}
+    assert found == {"BUILD", "WORKSPACE", "BUILD.bazel", "rules.bzl"}
 
 
 def test_jsonc_discover_gate() -> None:

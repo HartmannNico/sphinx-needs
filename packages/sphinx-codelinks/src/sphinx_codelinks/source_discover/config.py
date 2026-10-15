@@ -27,6 +27,21 @@ COMMENT_FILETYPE = {
     # PyPI, so it cannot be wired in here. Track fish separately if a PyPI
     # grammar becomes available.
     "bash": ["sh", "bash", "zsh", "ksh"],
+    # Markdown uses block-level HTML comments `<!-- @needs … -->` as traceability
+    # markers. tree-sitter-markdown captures them as `html_block` nodes.
+    # NOTE: because the node text includes the `<!-- … -->` delimiters, callers
+    # must set `end_sequence: " -->"` (not the default `"\n"`) in their
+    # oneline_comment_style config to prevent `-->` from leaking into parsed fields.
+    "markdown": ["md", "markdown"],
+    # Bazel/Starlark uses `#` line comments and a Python subset of the syntax, so
+    # it is scanned with the Python grammar.
+    "bazel": ["bzl", "bazel"],
+}
+
+# Files without a suffix that belong to a comment type, matched by exact name.
+# `BUILD.bazel`, `WORKSPACE.bazel` and `MODULE.bazel` already match by suffix.
+COMMENT_FILENAMES: dict[str, list[str]] = {
+    "bazel": ["BUILD", "WORKSPACE"],
 }
 
 
@@ -83,6 +98,10 @@ class CommentType(str, Enum):  # noqa: UP042  # StrEnum changes str(member), whi
     jsonc = "jsonc"
     # @Support Bash style comments, IMPL_BASH_1, impl, [FE_BASH]
     bash = "bash"
+    # @Support Markdown HTML-comment style, IMPL_MD_1, impl, [FE_MARKDOWN]
+    markdown = "markdown"
+    # @Support Bazel/Starlark style comments, IMPL_BAZEL_1, impl, [FE_BAZEL]
+    bazel = "bazel"
 
 
 def default_exclude_for_comment_type(comment_type: str) -> list[str]:

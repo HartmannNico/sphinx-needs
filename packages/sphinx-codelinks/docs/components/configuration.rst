@@ -317,7 +317,7 @@ Specifies the comment syntax style used in the source code files. This determine
 
 **Type:** ``str``
 **Default:** ``"cpp"``
-**Supported values:** ``"cpp"``, ``"python"``, ``"cs"``, ``"ts"``, ``"yaml"``, ``"rust"``, ``"go"``, ``"jsonc"``, ``"bash"``
+**Supported values:** ``"cpp"``, ``"python"``, ``"cs"``, ``"ts"``, ``"yaml"``, ``"rust"``, ``"go"``, ``"jsonc"``, ``"bash"``, ``"markdown"``, ``"bazel"``
 
 .. code-block:: toml
 
@@ -383,6 +383,15 @@ Specifies the comment syntax style used in the source code files. This determine
      - ``"bash"``
      - ``#`` (single-line)
      - ``.sh``, ``.bash``, ``.zsh``, ``.ksh``
+   * - Markdown
+     - ``"markdown"``
+     - ``<!-- … -->`` (block-level HTML comment); set ``end_sequence = " -->"``
+       in ``oneline_comment_style``
+     - ``.md``, ``.markdown``
+   * - Bazel / Starlark
+     - ``"bazel"``
+     - ``#`` (single-line), scanned with the Python grammar
+     - ``.bzl``, ``.bazel`` and the suffix-less files ``BUILD`` and ``WORKSPACE``
 
 .. note:: Future versions may support additional programming languages.
 

@@ -1,0 +1,27 @@
+[
+  {
+    "filepath": "case.bzl",
+    "remote_url": null,
+    "source_map": {
+      "start": {
+        "row": 0,
+        "column": 3
+      },
+      "end": {
+        "row": 0,
+        "column": 39
+      }
+    },
+    "tagged_scope": "def f():\n    pass",
+    "need": {
+      "title": "Bzl Title",
+      "id": "IMPL_BZL",
+      "type": "impl",
+      "links": [
+        "REQ_BZL"
+      ]
+    },
+    "type": "need",
+    "tagged_scope_type": "function_definition"
+  }
+]

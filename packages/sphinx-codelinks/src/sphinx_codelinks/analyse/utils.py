@@ -68,6 +68,11 @@ SCOPE_NODE_TYPES = {
     },
     # @Bash Scope Node Types, IMPL_BASH_2, impl, [FE_BASH]
     CommentType.bash: {"function_definition"},
+    # @Bazel Scope Node Types, IMPL_BAZEL_2, impl, [FE_BAZEL]
+    # Starlark has `def` but no classes.
+    CommentType.bazel: {"function_definition"},
+    # Markdown has no scopes: a marker is always a standalone html_block, and
+    # scope association is not needed for one-line needs.
 }
 
 logger = get_logger(__name__)
@@ -86,6 +91,10 @@ PYTHON_QUERY = """
                 (function_definition (block (expression_statement (string)) @comment))
                 (class_definition (block (expression_statement (string)) @comment))
             """
+# @Markdown HTML-comment query for tree-sitter, IMPL_MD_3, impl, [FE_MARKDOWN]
+# Captures block-level HTML nodes (<!-- … -->) as @comment. Inline HTML comments
+# inside paragraphs are not captured, only standalone html_block elements.
+MARKDOWN_QUERY = """(html_block) @comment"""
 # The query of every grammar whose comments are one ``comment`` node kind.
 SIMPLE_COMMENT_QUERY = """(comment) @comment"""
 # ``html_comment`` is a separate node kind the TypeScript/TSX grammars emit
@@ -149,7 +158,7 @@ def is_text_file(filepath: Path, sample_size: int = 2048) -> bool:
         return False
 
 
-# @Tree-sitter parser initialization for multiple languages, IMPL_LANG_1, impl, [FE_C_SUPPORT, FE_CPP, FE_PY, FE_YAML, FE_RUST, FE_GO, FE_JSONC, FE_BASH, FE_TS]
+# @Tree-sitter parser initialization for multiple languages, IMPL_LANG_1, impl, [FE_C_SUPPORT, FE_CPP, FE_PY, FE_YAML, FE_RUST, FE_GO, FE_JSONC, FE_BASH, FE_TS, FE_MARKDOWN, FE_BAZEL]
 def init_tree_sitter(
     comment_type: CommentType, src_path: Path | None = None
 ) -> tuple[Parser, Query]:
@@ -166,7 +175,7 @@ def init_tree_sitter(
 
         parsed_language = Language(tree_sitter_cpp.language())
         query = Query(parsed_language, SIMPLE_COMMENT_QUERY)
-    elif comment_type == CommentType.python:
+    elif comment_type in (CommentType.python, CommentType.bazel):
         import tree_sitter_python
 
         parsed_language = Language(tree_sitter_python.language())
@@ -221,6 +230,11 @@ def init_tree_sitter(
 
         parsed_language = Language(tree_sitter_bash.language())
         query = Query(parsed_language, SIMPLE_COMMENT_QUERY)
+    elif comment_type == CommentType.markdown:
+        import tree_sitter_markdown
+
+        parsed_language = Language(tree_sitter_markdown.language())
+        query = Query(parsed_language, MARKDOWN_QUERY)
     else:
         raise ValueError(f"Unsupported comment style: {comment_type}")
     parser = Parser(parsed_language)

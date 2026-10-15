@@ -140,3 +140,18 @@ html_comment_closed_oneliner_js:
   source: |
     <!-- @Html Closed, IMPL_HTML_CLOSED, impl, [REQ_HTML] -->
     const x = 1;
+
+default_oneliner_markdown:
+  lang: markdown
+  config:
+    end_sequence: " -->"
+  source: |
+    <!-- @Md Title, IMPL_MD, impl, [REQ_MD] -->
+
+default_oneliner_bazel:
+  lang: bazel
+  config: default
+  source: |
+    # @Bzl Title, IMPL_BZL, impl, [REQ_BZL]
+    def f():
+        pass

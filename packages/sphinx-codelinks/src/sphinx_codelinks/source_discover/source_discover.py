@@ -6,6 +6,7 @@ from ignore.overrides import OverrideBuilder
 
 from sphinx_codelinks.logger import get_logger
 from sphinx_codelinks.source_discover.config import (
+    COMMENT_FILENAMES,
     COMMENT_FILETYPE,
     CommentType,
     SourceDiscoverConfig,
@@ -91,6 +92,9 @@ class SourceDiscover:
         self.file_types = {
             f".{ext}" for ext in COMMENT_FILETYPE[src_discover_config.comment_type]
         }
+        self.file_names = set(
+            COMMENT_FILENAMES.get(src_discover_config.comment_type, [])
+        )
 
         self.source_paths = self._discover()
 
@@ -150,7 +154,11 @@ class SourceDiscover:
             filepath = entry.path()
             if not filepath.is_file():
                 continue
-            if self.file_types and filepath.suffix.lower() not in self.file_types:
+            if (
+                self.file_types
+                and filepath.suffix.lower() not in self.file_types
+                and filepath.name not in self.file_names
+            ):
                 continue
             # @JSONC .json files require a leading comment, IMPL_JSONC_3, impl, [FE_JSONC]
             # A plain ``.json`` file is only treated as JSONC when it opens with a
