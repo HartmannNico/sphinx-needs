@@ -150,12 +150,18 @@ class SourceDiscover:
 
         boundary = (self.boundary or src_dir).resolve()
         discovered_files = []
+        # With explicit include patterns the caller has selected the files to
+        # scan; the extension filter would silently drop suffix-less files such
+        # as `.folder` or `pre-commit`, or files whose suffix belongs to another
+        # comment type (e.g. `.html` scanned as markdown).
+        has_explicit_include = bool(self.src_discover_config.include)
         for entry in builder.build():
             filepath = entry.path()
             if not filepath.is_file():
                 continue
             if (
                 self.file_types
+                and not has_explicit_include
                 and filepath.suffix.lower() not in self.file_types
                 and filepath.name not in self.file_names
             ):

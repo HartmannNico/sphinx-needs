@@ -393,6 +393,9 @@ Specifies the comment syntax style used in the source code files. This determine
      - ``#`` (single-line), scanned with the Python grammar
      - ``.bzl``, ``.bazel`` and the suffix-less files ``BUILD`` and ``WORKSPACE``
 
+.. note:: When ``include`` is set, the listed patterns alone select the files to scan: the
+   extension filter above is not applied, so suffix-less files such as ``.folder`` can be scanned.
+
 .. note:: Future versions may support additional programming languages.
 
 gitignore

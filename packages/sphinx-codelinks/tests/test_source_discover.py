@@ -229,6 +229,21 @@ def test_bazel_discover_suffixless_names(tmp_path: Path) -> None:
     assert found == {"BUILD", "WORKSPACE", "BUILD.bazel", "rules.bzl"}
 
 
+def test_explicit_include_bypasses_extension_filter(tmp_path: Path) -> None:
+    """`include` selects files by pattern, whatever their suffix."""
+    for name in (".folder", "pre-commit", "page.html", "notes.md"):
+        (tmp_path / name).touch()
+
+    config = SourceDiscoverConfig(
+        src_dir=tmp_path,
+        comment_type="markdown",
+        gitignore=False,
+        include=["**/.folder", "*.html"],
+    )
+    found = {path.name for path in SourceDiscover(config).source_paths}
+    assert found == {".folder", "page.html"}
+
+
 def test_jsonc_discover_gate() -> None:
     """`.jsonc` is always discovered; `.json` only when it opens with a comment."""
     jsonc_dir = Path(__file__).parent / "data" / "jsonc"
